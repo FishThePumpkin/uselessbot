@@ -149,4 +149,4 @@ async def logout():
 client.loop.create_task(change_status())
 
 
-client.run(str(os.environ.get('BOT_TOKEN')))
+client.run(os.environ['BOT_TOKEN'])
