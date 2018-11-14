@@ -3,7 +3,7 @@ from discord.ext import commands
 import asyncio
 from itertools import cycle
 import youtube_dl
-
+import os
 
 client = commands.Bot(command_prefix = "!")
 client.remove_command('help')
