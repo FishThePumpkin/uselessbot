@@ -10,6 +10,14 @@ client.remove_command('help')
 status = ['Viv\'s', 'voice', 'is', 'so', 'nice', 'owo']
 
 players = {}
+queue = {}
+
+def check_queue(id):
+    if queues[id] != []:
+        player = queues[id].pop(0)
+        players[id] = player
+        player.start()
+
 
 async def change_status():
     await client.wait_until_ready()
@@ -137,15 +145,31 @@ async def help(ctx):
 async def play(ctx, url):
     server = ctx.message.server
     voice_client = client.voice_client_in(server)
-    player = await voice_client.create_ytdl_player(url)
+    player = await voice_client.create_ytdl_player(url, after=lambda: check_queue(server.id))
     players[server.id] = player
     player.start()
+    
+@client.command(pass_context=True)
+async def queue(ctx, url):
+    server = ctx.message.server
+    voice_client = client.voice_client_in(server)
+    author = ctx.message.author
+    player = await voice_client.create_ytdl_player(url, after=lambda: check_queue(server.id))
+ 
+    if server.id in queues:
+        queues[server.id].append(player)
+    else:
+        queues[server.id] = [player]
+    await client.say(author+' queued '+url)
 
 
 @client.command()
 async def logout():
     await client.logout()
-
+    
+        
+        
+    
 client.loop.create_task(change_status())
 
 
