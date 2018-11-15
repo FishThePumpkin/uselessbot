@@ -4,7 +4,6 @@ import asyncio
 from itertools import cycle
 import youtube_dl
 import os
-import pynacl
 
 client = commands.Bot(command_prefix = "!")
 client.remove_command('help')
