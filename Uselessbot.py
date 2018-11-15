@@ -4,6 +4,7 @@ import asyncio
 from itertools import cycle
 import youtube_dl
 import os
+import PyNaCl
 
 
 client = commands.Bot(command_prefix = "!")
