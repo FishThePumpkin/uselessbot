@@ -3,21 +3,13 @@ from discord.ext import commands
 import asyncio
 from itertools import cycle
 import youtube_dl
-import os
+
 
 client = commands.Bot(command_prefix = "!")
 client.remove_command('help')
 status = ['Viv\'s', 'voice', 'is', 'so', 'nice', 'owo']
 
 players = {}
-queue = {}
-
-def check_queue(id):
-    if queues[id] != []:
-        player = queues[id].pop(0)
-        players[id] = player
-        player.start()
-
 
 async def change_status():
     await client.wait_until_ready()
@@ -26,7 +18,7 @@ async def change_status():
     while not client.is_closed:
         current_status = next(msgs)
         await client.change_presence(game=discord.Game(name=current_status))
-        await asyncio.sleep(5)
+        await asyncio.sleep(2)
 
 
 @client.event
@@ -93,14 +85,22 @@ async def game(ctx, *game):
 
 @client.command(pass_context=True)
 async def join(ctx):
-    channel = ctx.message.author.voice.voice_channel
-    await client.join_voice_channel(channel)
+    author = ctx.message.author
+    channel = author.voice_channel
+    server = ctx.message.server
+    if channel is None:
+        await client.say('Please connect to a voice channel first!')
+    else:   
+        await client.join_voice_channel(channel)
 
 @client.command(pass_context=True)
 async def leave(ctx):
     server = ctx.message.server
-    voice_client = client.voice_client_in(server)
-    await voice_client.disconnect()
+    for x in client.voice_clients:
+        if(x.server == ctx.message.server):
+            return await x.disconnect()
+        
+    return await client.say("I'm not in a voice channel!")
 
 @client.command()
 async def displayembed():
@@ -143,34 +143,30 @@ async def help(ctx):
 
 @client.command(pass_context=True)
 async def play(ctx, url):
-    server = ctx.message.server
-    voice_client = client.voice_client_in(server)
-    player = await voice_client.create_ytdl_player(url, after=lambda: check_queue(server.id))
-    players[server.id] = player
-    player.start()
-    
-@client.command(pass_context=True)
-async def queue(ctx, url):
-    server = ctx.message.server
-    voice_client = client.voice_client_in(server)
     author = ctx.message.author
-    player = await voice_client.create_ytdl_player(url, after=lambda: check_queue(server.id))
- 
-    if server.id in queues:
-        queues[server.id].append(player)
+    channel = author.voice_channel
+    server = ctx.message.server
+    if channel is None:
+        await client.say('Please connect to a voice channel first!')
+    elif client.is_voice_connected(server):
+        voice_client = client.voice_client_in(server)
+        player = await voice_client.create_ytdl_player(url)
+        players[server.id] = player
+        player.start()
     else:
-        queues[server.id] = [player]
-    await client.say(author+' queued '+url)
+        await client.join_voice_channel(channel)   
+        voice_client = client.voice_client_in(server)
+        player = await voice_client.create_ytdl_player(url)
+        players[server.id] = player
+        player.start()
 
 
 @client.command()
 async def logout():
     await client.logout()
-    
-        
-        
-    
+
 client.loop.create_task(change_status())
+
 
 
 client.run(os.environ['BOT_TOKEN'])
