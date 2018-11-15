@@ -5,7 +5,7 @@ from itertools import cycle
 import youtube_dl
 import os
 import PyNaCl
-
+import opus
 
 client = commands.Bot(command_prefix = "!")
 client.remove_command('help')
