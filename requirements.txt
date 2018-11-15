@@ -1,5 +1,4 @@
 discord
 asyncio
 youtube_dl
-os
 pynacl
